@@ -15,6 +15,10 @@ x = 100
 
 # importing an image
 player_surf = pygame.image.load(join('images', 'player.png')).convert_alpha()
+# making a rectangle from player
+player_rect = player_surf.get_frect(
+    center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
+    )
 
 # import star
 star_surf = pygame.image.load(join('images', 'star.png')).convert_alpha()
@@ -35,14 +39,16 @@ while running:
             running = False
 
     # draw the game
-    display_surface.fill('darkgoldenrod1')
+    display_surface.fill('darkgray')
     # placing 20 random stars with randint
     for pos in star_positions:
         display_surface.blit(star_surf, pos)
 
     # displaying player/animating
-    display_surface.blit(player_surf, (x, 200))
-    x += 0.1
+    if player_rect.right < WINDOW_WIDTH:
+        player_rect.left += 0.2
+
+    display_surface.blit(player_surf, player_rect)
 
     pygame.display.update()
 
