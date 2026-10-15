@@ -17,10 +17,10 @@ x = 100
 # imports/rects
 player_surf = pygame.image.load(join('images', 'player.png')).convert_alpha()
 player_rect = player_surf.get_frect(
-    midleft=(0, WINDOW_HEIGHT / 2)
+    center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
     )
-player_direction = pygame.math.Vector2(5, -3)
-player_speed = 20
+player_direction = pygame.math.Vector2(0, 0)
+player_speed = 500
 
 meteor_surf = pygame.image.load(join('images', 'meteor.png')).convert_alpha()
 meteor_rect = meteor_surf.get_frect(
@@ -50,17 +50,18 @@ running = True
 # while loop
 while running:
     # frame rate
-    dt = clock.tick(120) / 1000
+    dt = clock.tick(60) / 1000
     # event loop
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_1:
-                print("1")
-        if event.type == pygame.MOUSEMOTION:
-            player_rect.center = event.pos
 
+    # input
+    keys = pygame.key.get_pressed()
+    player_direction.x = int(keys[pygame.K_RIGHT]) - int(keys[pygame.K_LEFT])
+    player_direction.y = int(keys[pygame.K_DOWN] - int(keys[pygame.K_UP]))
+
+    player_rect.center += player_direction * player_speed * dt
     # draw the game
     display_surface.fill('darkgray')
     # placing 20 random stars with randint
