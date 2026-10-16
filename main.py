@@ -13,7 +13,17 @@ class Player(pygame.sprite.Sprite):
             center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
         )
         self.player_direction = pygame.math.Vector2((0, 0))
-        self.player_speed = 800
+        self.player_speed = 400
+
+        self.can_shoot = True
+        self.laser_shoot_time = 0
+        self.cooldown_duration = 500
+
+    def laser_timer(self):
+        if not self.can_shoot:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.laser_shoot_time >= self.cooldown_duration:
+                self.can_shoot = True
 
     def update(self, dt):
         # input
@@ -32,8 +42,12 @@ class Player(pygame.sprite.Sprite):
         self.rect.center += self.player_direction * self.player_speed * dt
 
         recent_keys = pygame.key.get_just_pressed()
-        if recent_keys[pygame.K_SPACE]:
-            print("laser fire")
+        if recent_keys[pygame.K_SPACE] and self.can_shoot:
+            print('laser shot!')
+            self.can_shoot = False
+            self.laser_shoot_time = pygame.time.get_ticks()
+
+        self.laser_timer()
 
 
 class Star(pygame.sprite.Sprite):
@@ -73,6 +87,9 @@ laser_rect = laser_surf.get_frect(
     bottomleft=(20, WINDOW_HEIGHT - 20)
 )
 
+# Custom events => meteor timer
+event_meteor = pygame.event.custom_type()
+pygame.time.set_timer(event_meteor, 1000)
 
 # creating a single rect
 # plain_rect = pygame.FRect(left, right, width, height)
@@ -88,6 +105,8 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        # if event.type == event_meteor:
+        #     print('Meteor Spawned...')
 
     all_sprites.update(dt)
 
