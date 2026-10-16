@@ -17,7 +17,7 @@ class Player(pygame.sprite.Sprite):
 
         self.can_shoot = True
         self.laser_shoot_time = 0
-        self.cooldown_duration = 500
+        self.cooldown_duration = 200
 
     def laser_timer(self):
         if not self.can_shoot:
@@ -43,7 +43,7 @@ class Player(pygame.sprite.Sprite):
 
         recent_keys = pygame.key.get_just_pressed()
         if recent_keys[pygame.K_SPACE] and self.can_shoot:
-            print('laser shot!')
+            Laser(all_sprites, surf=laser_surf, pos=self.rect.midtop)
             self.can_shoot = False
             self.laser_shoot_time = pygame.time.get_ticks()
 
@@ -59,6 +59,20 @@ class Star(pygame.sprite.Sprite):
         )
 
 
+class Laser(pygame.sprite.Sprite):
+    def __init__(self, *groups, surf, pos,):
+        super().__init__(*groups)
+        self.image = surf
+        self.rect = self.image.get_frect(
+            midbottom=pos
+        )
+
+    def update(self, dt):
+        self.rect.centery -= 400 * dt
+        if self.rect.bottom < 0:
+            self.kill()
+
+
 # Quick general setup
 pygame.init()
 WINDOW_WIDTH, WINDOW_HEIGHT = 1280, 720
@@ -71,21 +85,23 @@ surf.fill('blue')
 x = 100
 
 all_sprites = pygame.sprite.Group()
+
+# star image
 star_surf = pygame.image.load(join('images', 'star.png')).convert_alpha()
-player = Player(all_sprites)
 for _ in range(20):
     Star(all_sprites, surf=star_surf)
+
+# Spawn player
+player = Player(all_sprites)
 
 meteor_surf = pygame.image.load(join('images', 'meteor.png')).convert_alpha()
 meteor_rect = meteor_surf.get_frect(
     center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
 )
 
-
+# laser image
 laser_surf = pygame.image.load(join('images', 'laser.png')).convert_alpha()
-laser_rect = laser_surf.get_frect(
-    bottomleft=(20, WINDOW_HEIGHT - 20)
-)
+
 
 # Custom events => meteor timer
 event_meteor = pygame.event.custom_type()
@@ -114,7 +130,6 @@ while running:
     display_surface.fill('darkgray')
 
     # displaying parts
-    display_surface.blit(laser_surf, laser_rect)
     display_surface.blit(meteor_surf, meteor_rect)
     all_sprites.draw(display_surface)
     pygame.display.update()
