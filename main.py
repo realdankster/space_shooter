@@ -20,7 +20,7 @@ player_rect = player_surf.get_frect(
     center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
     )
 player_direction = pygame.math.Vector2(0, 0)
-player_speed = 100
+player_speed = 800
 
 meteor_surf = pygame.image.load(join('images', 'meteor.png')).convert_alpha()
 meteor_rect = meteor_surf.get_frect(
@@ -55,6 +55,9 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        # if event.type == pygame.KEYDOWN:
+        #     if event.key == pygame.K_SPACE:
+        #         print("fire laser")
 
     # input
     keys = pygame.key.get_pressed()
@@ -63,7 +66,11 @@ while running:
     if player_direction.length() > 0:
         player_direction = player_direction.normalize()
 
-    print(player_direction)
+    recent_keys = pygame.key.get_just_pressed()
+    if recent_keys[pygame.K_SPACE]:
+        print("laser fire")
+
+    # print(player_direction)
     player_rect.center += player_direction * player_speed * dt
     # draw the game
     display_surface.fill('darkgray')
