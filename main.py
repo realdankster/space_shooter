@@ -3,6 +3,7 @@ from os.path import join
 from random import randint
 
 
+# Sprite Classes
 class Player(pygame.sprite.Sprite):
     def __init__(self, *groups):
         super().__init__(*groups)
@@ -44,13 +45,13 @@ class Star(pygame.sprite.Sprite):
         )
 
 
-# quick general setup
+# Quick general setup
 pygame.init()
 WINDOW_WIDTH, WINDOW_HEIGHT = 1280, 720
 display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 clock = pygame.time.Clock()
 
-# plain surface
+# Plain surface
 surf = pygame.Surface((100, 200))
 surf.fill('blue')
 x = 100
@@ -76,25 +77,24 @@ laser_rect = laser_surf.get_frect(
 # creating a single rect
 # plain_rect = pygame.FRect(left, right, width, height)
 
-# flag for loop
+# Flag for loop
 running = True
 
-# while loop
+# While loop
 while running:
-    # frame rate
+    # Frame rate
     dt = clock.tick(60) / 1000
-    # event loop
+    # Event loop
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
     all_sprites.update(dt)
 
-    # draw the game
+    # Background
     display_surface.fill('darkgray')
-    # placing 20 random stars with randint
 
-    # displaying player/animating
+    # displaying parts
     display_surface.blit(laser_surf, laser_rect)
     display_surface.blit(meteor_surf, meteor_rect)
     all_sprites.draw(display_surface)
