@@ -20,7 +20,7 @@ player_rect = player_surf.get_frect(
     center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
     )
 player_direction = pygame.math.Vector2(0, 0)
-player_speed = 500
+player_speed = 100
 
 meteor_surf = pygame.image.load(join('images', 'meteor.png')).convert_alpha()
 meteor_rect = meteor_surf.get_frect(
@@ -60,7 +60,10 @@ while running:
     keys = pygame.key.get_pressed()
     player_direction.x = int(keys[pygame.K_RIGHT]) - int(keys[pygame.K_LEFT])
     player_direction.y = int(keys[pygame.K_DOWN] - int(keys[pygame.K_UP]))
+    if player_direction.length() > 0:
+        player_direction = player_direction.normalize()
 
+    print(player_direction)
     player_rect.center += player_direction * player_speed * dt
     # draw the game
     display_surface.fill('darkgray')
