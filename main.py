@@ -119,6 +119,8 @@ x = 100
 all_sprites = pygame.sprite.Group()
 meteor_sprites = pygame.sprite.Group()
 laser_sprites = pygame.sprite.Group()
+font = pygame.font.Font(join('images', 'Oxanium-Bold.ttf'))
+text_surf = font.render('text', True, (220, 220, 220))
 
 # star image
 star_surf = pygame.image.load(join('images', 'star.png')).convert_alpha()
@@ -155,13 +157,14 @@ while running:
     all_sprites.update(dt)
 
     # Background
-    display_surface.fill('darkgray')
+    display_surface.fill('#392640')
 
     # collision test
     collision()
 
     # displaying parts
     all_sprites.draw(display_surface)
+    display_surface.blit(text_surf, (0, 0))
     pygame.display.update()
 
 
