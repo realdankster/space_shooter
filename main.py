@@ -43,7 +43,8 @@ class Player(pygame.sprite.Sprite):
 
         recent_keys = pygame.key.get_just_pressed()
         if recent_keys[pygame.K_SPACE] and self.can_shoot:
-            Laser(all_sprites, surf=laser_surf, pos=self.rect.midtop)
+            Laser((all_sprites, laser_sprites),
+                  surf=laser_surf, pos=self.rect.midtop)
             self.can_shoot = False
             self.laser_shoot_time = pygame.time.get_ticks()
 
@@ -89,6 +90,21 @@ class Meteor(pygame.sprite.Sprite):
             self.kill()
 
 
+def collision():
+
+    global running
+
+    for laser in laser_sprites:
+        collision = pygame.sprite.spritecollide(laser, meteor_sprites, True)
+        if collision:
+            laser.kill()
+    collision_sprites = pygame.sprite.spritecollide(
+        player, meteor_sprites, True
+    )
+    if collision_sprites:
+        running = False
+
+
 # Quick general setup
 pygame.init()
 WINDOW_WIDTH, WINDOW_HEIGHT = 1280, 720
@@ -102,6 +118,7 @@ x = 100
 
 all_sprites = pygame.sprite.Group()
 meteor_sprites = pygame.sprite.Group()
+laser_sprites = pygame.sprite.Group()
 
 # star image
 star_surf = pygame.image.load(join('images', 'star.png')).convert_alpha()
@@ -116,13 +133,9 @@ meteor_surf = pygame.image.load(join('images', 'meteor.png')).convert_alpha()
 # laser image
 laser_surf = pygame.image.load(join('images', 'laser.png')).convert_alpha()
 
-
 # Custom events => meteor timer
 event_meteor = pygame.event.custom_type()
 pygame.time.set_timer(event_meteor, 600)
-
-# creating a single rect
-# plain_rect = pygame.FRect(left, right, width, height)
 
 # Flag for loop
 running = True
@@ -130,7 +143,7 @@ running = True
 # While loop
 while running:
     # Frame rate
-    dt = clock.tick(60) / 1000
+    dt = clock.tick(120) / 1000
     # Event loop
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -145,11 +158,7 @@ while running:
     display_surface.fill('darkgray')
 
     # collision test
-    collison_sprites = pygame.sprite.spritecollide(
-        player, meteor_sprites, True
-        )
-    if collison_sprites:
-        print(collison_sprites[0])
+    collision()
 
     # displaying parts
     all_sprites.draw(display_surface)
