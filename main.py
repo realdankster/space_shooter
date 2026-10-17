@@ -101,6 +101,7 @@ surf.fill('blue')
 x = 100
 
 all_sprites = pygame.sprite.Group()
+meteor_sprites = pygame.sprite.Group()
 
 # star image
 star_surf = pygame.image.load(join('images', 'star.png')).convert_alpha()
@@ -136,12 +137,19 @@ while running:
             running = False
         if event.type == event_meteor:
             x, y = randint(0, WINDOW_WIDTH), randint(-200, -100)
-            Meteor(all_sprites, surf=meteor_surf, pos=(x, y))
+            Meteor((all_sprites, meteor_sprites), surf=meteor_surf, pos=(x, y))
 
     all_sprites.update(dt)
 
     # Background
     display_surface.fill('darkgray')
+
+    # collision test
+    collison_sprites = pygame.sprite.spritecollide(
+        player, meteor_sprites, True
+        )
+    if collison_sprites:
+        print(collison_sprites[0])
 
     # displaying parts
     all_sprites.draw(display_surface)
