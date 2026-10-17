@@ -1,6 +1,6 @@
 import pygame
 from os.path import join
-from random import randint
+from random import randint, uniform
 
 
 # Sprite Classes
@@ -60,7 +60,7 @@ class Star(pygame.sprite.Sprite):
 
 
 class Laser(pygame.sprite.Sprite):
-    def __init__(self, *groups, surf, pos,):
+    def __init__(self, *groups, surf, pos):
         super().__init__(*groups)
         self.image = surf
         self.rect = self.image.get_frect(
@@ -70,6 +70,22 @@ class Laser(pygame.sprite.Sprite):
     def update(self, dt):
         self.rect.centery -= 400 * dt
         if self.rect.bottom < 0:
+            self.kill()
+
+
+class Meteor(pygame.sprite.Sprite):
+    def __init__(self, *groups, surf, pos):
+        super().__init__(*groups)
+        self.image = surf
+        self.rect = self.image.get_frect(
+            center=pos
+        )
+        self.direction = pygame.math.Vector2(uniform(-0.5, 0.5), 1)
+        self.speed = randint(100, 300)
+
+    def update(self, dt):
+        self.rect.center += self.direction * self.speed * dt
+        if self.rect.top > WINDOW_HEIGHT:
             self.kill()
 
 
@@ -95,9 +111,6 @@ for _ in range(20):
 player = Player(all_sprites)
 
 meteor_surf = pygame.image.load(join('images', 'meteor.png')).convert_alpha()
-meteor_rect = meteor_surf.get_frect(
-    center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
-)
 
 # laser image
 laser_surf = pygame.image.load(join('images', 'laser.png')).convert_alpha()
@@ -105,7 +118,7 @@ laser_surf = pygame.image.load(join('images', 'laser.png')).convert_alpha()
 
 # Custom events => meteor timer
 event_meteor = pygame.event.custom_type()
-pygame.time.set_timer(event_meteor, 1000)
+pygame.time.set_timer(event_meteor, 600)
 
 # creating a single rect
 # plain_rect = pygame.FRect(left, right, width, height)
@@ -121,8 +134,9 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        # if event.type == event_meteor:
-        #     print('Meteor Spawned...')
+        if event.type == event_meteor:
+            x, y = randint(0, WINDOW_WIDTH), randint(-200, -100)
+            Meteor(all_sprites, surf=meteor_surf, pos=(x, y))
 
     all_sprites.update(dt)
 
@@ -130,7 +144,6 @@ while running:
     display_surface.fill('darkgray')
 
     # displaying parts
-    display_surface.blit(meteor_surf, meteor_rect)
     all_sprites.draw(display_surface)
     pygame.display.update()
 
