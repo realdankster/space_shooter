@@ -176,7 +176,48 @@ class AnimatedExplosion(pygame.sprite.Sprite):
             self.kill()
 
 
-def collision(print_score):
+class Wasted:
+    def __init__(self,
+                 window_width,
+                 window_height,
+                 font,
+                 score):
+        self.surface = pygame.Surface(
+            (window_width, window_height)
+        )
+        self.surface.fill('#632ea8')
+
+        self.text_surface = font.render(
+            f"You Died... Your Score Was: {score}",
+            True,
+            (200, 200, 200)
+        )
+
+        self.text_rect = self.text_surface.get_frect(
+            center=(window_width / 2, window_height / 2)
+        )
+
+        self.surface.blit(self.text_surface, self.text_rect)
+
+        self.death_time = pygame.time.get_ticks()
+        self.close_timer = 2000
+        self.finished = False
+
+    def update(self):
+        current_time = pygame.time.get_ticks()
+
+        if current_time - self.death_time >= self.close_timer:
+            self.finished = True
+
+    def draw(self, surface):
+        surface.blit(self.surface, (0, 0))
+
+
+# Flag for wasted screen
+wasted_screen = None
+
+
+def collision(wasted_screen):
     """Handle laser-meteor collisions and player-meteor collisions."""
 
     # Access the game-loop flag so a meteor collision can end the game.
@@ -184,6 +225,7 @@ def collision(print_score):
 
     # Track Score
     score = pygame.time.get_ticks() // 1000
+
     # Check every laser for a pixel-perfect collision with a meteor.
     for laser in laser_sprites:
         collision = pygame.sprite.spritecollide(
@@ -199,14 +241,19 @@ def collision(print_score):
     collision_sprites = pygame.sprite.spritecollide(
         player, meteor_sprites, True, pygame.sprite.collide_mask
     )
+
     # End the game when a meteor collides with the player.
-    if collision_sprites:
-        running = False
-        print_score(score)
+    if collision_sprites and wasted_screen is None:
+        wasted_screen = Wasted(
+            WINDOW_WIDTH,
+            WINDOW_HEIGHT,
+            font,
+            score
+        )
+        game_sound.stop()
+        gameover_sound.play()
 
-
-def print_score(score):
-    print(f"Wasted! Your Score Was {score}")
+    return wasted_screen
 
 
 def display_score():
@@ -231,6 +278,29 @@ def display_score():
         display_surface, (220, 220, 220),
         text_rect.inflate(20, 5).move(0, -6), 5, 5
         )
+
+
+def update_game(dt, wasted_screen, running):
+    display_surface.fill('#392640')
+
+    if wasted_screen is None:
+        # Normal game
+        all_sprites.update(dt)
+
+        wasted_screen = collision(wasted_screen)
+
+        display_score()
+        all_sprites.draw(display_surface)
+
+    else:
+        # Wasted screen
+        wasted_screen.update()
+        wasted_screen.draw(display_surface)
+
+        if wasted_screen.finished:
+            running = False
+
+    return wasted_screen, running
 
 
 # Initialize Pygame and prepare the game.
@@ -262,11 +332,13 @@ explosion_frames = [pygame.image.load(join(
 laser_sound = pygame.mixer.Sound(join('audio', 'laser.wav'))
 explosion_sound = pygame.mixer.Sound(join('audio', 'explosion.wav'))
 game_sound = pygame.mixer.Sound(join('audio', 'game_music.wav'))
+gameover_sound = pygame.mixer.Sound(join('audio', 'GameOver.wav'))
 
 # Set the volume for each sound.
 laser_sound.set_volume(0.4)
 explosion_sound.set_volume(0.5)
 game_sound.set_volume(0.1)
+gameover_sound.set_volume(0.4)
 
 # Start the background music and loop it continuously.
 game_sound.play(loops=-1)
@@ -299,26 +371,16 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == event_meteor:
+        if event.type == event_meteor and wasted_screen is None:
             x, y = randint(0, WINDOW_WIDTH), randint(-200, -100)
             Meteor((all_sprites, meteor_sprites), surf=meteor_surf, pos=(x, y))
 
-    # Update the position, animation, and state of every sprite.
-    all_sprites.update(dt)
+    wasted_screen, running = update_game(
+        dt,
+        wasted_screen,
+        running
+    )
 
-    # Fill the window with the background color.
-    display_surface.fill('#392640')
-
-    # Check for collisions between game objects.
-    collision(print_score)
-
-    # Draw the current score.
-    display_score()
-
-    # Draw every sprite to the display surface.
-    all_sprites.draw(display_surface)
-
-    # Present the newly drawn frame on the screen.
     pygame.display.update()
 
 pygame.quit()
