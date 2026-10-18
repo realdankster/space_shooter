@@ -7,9 +7,8 @@ from random import randint, uniform
 class Player(pygame.sprite.Sprite):
     def __init__(self, *groups):
         super().__init__(*groups)
-        self.original_surf = pygame.image.load(
+        self.image = pygame.image.load(
             join('images', 'player.png')).convert_alpha()
-        self.image = self.original_surf
         self.rect = self.image.get_frect(
             center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
         )
@@ -20,9 +19,6 @@ class Player(pygame.sprite.Sprite):
         self.can_shoot = True
         self.laser_shoot_time = 0
         self.cooldown_duration = 200
-
-        # Transform
-        self.rotation = 0
 
         # mask
         self.mask = pygame.mask.from_surface(self.image)
@@ -61,12 +57,6 @@ class Player(pygame.sprite.Sprite):
 
         self.laser_timer()
 
-        # Transform test
-        self.rotation += 20 * dt
-        self.image = pygame.transform.rotozoom(
-            self.original_surf, self.rotation, 1
-            )
-
 
 class Star(pygame.sprite.Sprite):
     def __init__(self, *groups, surf):
@@ -95,6 +85,7 @@ class Laser(pygame.sprite.Sprite):
 class Meteor(pygame.sprite.Sprite):
     def __init__(self, *groups, surf, pos):
         super().__init__(*groups)
+        self.original_surf = surf
         self.image = surf
         self.rect = self.image.get_frect(
             center=pos
@@ -102,11 +93,18 @@ class Meteor(pygame.sprite.Sprite):
         self.direction = pygame.math.Vector2(uniform(-0.5, 0.5), 1)
         self.speed = randint(100, 300)
         self.mask = pygame.mask.from_surface(self.image)
+        self.rotation_speed = randint(100, 200)
+        self.rotation = 0
 
     def update(self, dt):
         self.rect.center += self.direction * self.speed * dt
         if self.rect.top > WINDOW_HEIGHT:
             self.kill()
+        self.rotation += self.rotation_speed * dt
+        self.image = pygame.transform.rotozoom(
+            self.original_surf, self.rotation, 1
+            )
+        self.rect = self.image.get_frect(center=self.rect.center)
 
 
 def collision():
@@ -144,11 +142,6 @@ pygame.init()
 WINDOW_WIDTH, WINDOW_HEIGHT = 1280, 720
 display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 clock = pygame.time.Clock()
-
-# Plain surface
-surf = pygame.Surface((100, 200))
-surf.fill('blue')
-x = 100
 
 all_sprites = pygame.sprite.Group()
 meteor_sprites = pygame.sprite.Group()
