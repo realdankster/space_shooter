@@ -7,8 +7,9 @@ from random import randint, uniform
 class Player(pygame.sprite.Sprite):
     def __init__(self, *groups):
         super().__init__(*groups)
-        self.image = pygame.image.load(join('images',
-                                            'player.png')).convert_alpha()
+        self.original_surf = pygame.image.load(
+            join('images', 'player.png')).convert_alpha()
+        self.image = self.original_surf
         self.rect = self.image.get_frect(
             center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
         )
@@ -21,6 +22,7 @@ class Player(pygame.sprite.Sprite):
         self.cooldown_duration = 200
 
         # Transform
+        self.rotation = 0
 
         # mask
         self.mask = pygame.mask.from_surface(self.image)
@@ -58,6 +60,12 @@ class Player(pygame.sprite.Sprite):
             self.laser_shoot_time = pygame.time.get_ticks()
 
         self.laser_timer()
+
+        # Transform test
+        self.rotation += 20 * dt
+        self.image = pygame.transform.rotozoom(
+            self.original_surf, self.rotation, 1
+            )
 
 
 class Star(pygame.sprite.Sprite):
