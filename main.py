@@ -176,12 +176,14 @@ class AnimatedExplosion(pygame.sprite.Sprite):
             self.kill()
 
 
-def collision():
+def collision(print_score):
     """Handle laser-meteor collisions and player-meteor collisions."""
 
     # Access the game-loop flag so a meteor collision can end the game.
     global running
 
+    # Track Score
+    score = pygame.time.get_ticks() // 1000
     # Check every laser for a pixel-perfect collision with a meteor.
     for laser in laser_sprites:
         collision = pygame.sprite.spritecollide(
@@ -200,6 +202,11 @@ def collision():
     # End the game when a meteor collides with the player.
     if collision_sprites:
         running = False
+        print_score(score)
+
+
+def print_score(score):
+    print(f"Wasted! Your Score Was {score}")
 
 
 def display_score():
@@ -303,7 +310,7 @@ while running:
     display_surface.fill('#392640')
 
     # Check for collisions between game objects.
-    collision()
+    collision(print_score)
 
     # Draw the current score.
     display_score()
