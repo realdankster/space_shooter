@@ -181,7 +181,7 @@ class Wasted(pygame.sprite.Sprite):
                  window_width,
                  window_height,
                  font,
-                 score):
+                 score, gameover):
         super().__init__(*groups)
 
         self.image = pygame.Surface(
@@ -190,22 +190,26 @@ class Wasted(pygame.sprite.Sprite):
         self.rect = self.image.get_frect(
             topleft=(0, 0)
         )
-        self.image.fill('#632ea8')
+        self.image.fill('#6e197b')
 
+        self.game_over_surf = gameover
+        self.game_over_rect = self.game_over_surf.get_frect(
+            center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
+        )
         self.text_surface = font.render(
-            f"You Died... Your Score Was: {score}",
+            f"Your Score: {score}",
             True,
             (200, 200, 200)
         )
 
         self.text_rect = self.text_surface.get_frect(
-            center=(window_width / 2, window_height / 2)
+            center=(window_width / 2, window_height - 25)
         )
 
         self.image.blit(self.text_surface, self.text_rect)
-
+        self.image.blit(self.game_over_surf, self.game_over_rect)
         self.death_time = pygame.time.get_ticks()
-        self.close_timer = 2000
+        self.close_timer = 3000
         self.finished = False
 
     def update(self, dt):
@@ -251,7 +255,8 @@ def collision(wasted_screen):
             window_width=WINDOW_WIDTH,
             window_height=WINDOW_HEIGHT,
             font=font,
-            score=score
+            score=score,
+            gameover=resized_game_over
         )
         game_sound.stop()
         gameover_sound.play()
@@ -350,6 +355,8 @@ game_sound.play(loops=-1)
 star_surf = pygame.image.load(join('images', 'star.png')).convert_alpha()
 meteor_surf = pygame.image.load(join('images', 'meteor.png')).convert_alpha()
 laser_surf = pygame.image.load(join('images', 'laser.png')).convert_alpha()
+game_over_surf = pygame.image.load(join('images', 'game_over.png')).convert()
+resized_game_over = pygame.transform.scale(game_over_surf, (600, 600))
 for _ in range(20):
     Star(all_sprites, surf=star_surf)
 
