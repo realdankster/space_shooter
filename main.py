@@ -176,16 +176,21 @@ class AnimatedExplosion(pygame.sprite.Sprite):
             self.kill()
 
 
-class Wasted:
-    def __init__(self,
+class Wasted(pygame.sprite.Sprite):
+    def __init__(self, *groups,
                  window_width,
                  window_height,
                  font,
                  score):
-        self.surface = pygame.Surface(
+        super().__init__(*groups)
+
+        self.image = pygame.Surface(
             (window_width, window_height)
         )
-        self.surface.fill('#632ea8')
+        self.rect = self.image.get_frect(
+            topleft=(0, 0)
+        )
+        self.image.fill('#632ea8')
 
         self.text_surface = font.render(
             f"You Died... Your Score Was: {score}",
@@ -197,20 +202,17 @@ class Wasted:
             center=(window_width / 2, window_height / 2)
         )
 
-        self.surface.blit(self.text_surface, self.text_rect)
+        self.image.blit(self.text_surface, self.text_rect)
 
         self.death_time = pygame.time.get_ticks()
         self.close_timer = 2000
         self.finished = False
 
-    def update(self):
+    def update(self, dt):
         current_time = pygame.time.get_ticks()
 
         if current_time - self.death_time >= self.close_timer:
             self.finished = True
-
-    def draw(self, surface):
-        surface.blit(self.surface, (0, 0))
 
 
 # Flag for wasted screen
@@ -245,10 +247,11 @@ def collision(wasted_screen):
     # End the game when a meteor collides with the player.
     if collision_sprites and wasted_screen is None:
         wasted_screen = Wasted(
-            WINDOW_WIDTH,
-            WINDOW_HEIGHT,
-            font,
-            score
+            all_sprites,
+            window_width=WINDOW_WIDTH,
+            window_height=WINDOW_HEIGHT,
+            font=font,
+            score=score
         )
         game_sound.stop()
         gameover_sound.play()
@@ -294,9 +297,8 @@ def update_game(dt, wasted_screen, running):
 
     else:
         # Wasted screen
-        wasted_screen.update()
-        wasted_screen.draw(display_surface)
-
+        all_sprites.update(dt)
+        all_sprites.draw(display_surface)
         if wasted_screen.finished:
             running = False
 
@@ -312,6 +314,7 @@ WINDOW_WIDTH, WINDOW_HEIGHT = 1280, 720
 # Create the display surface used to draw the game.
 display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption("Space Shooter")
+
 # Create a clock to measure elapsed time between frames.
 clock = pygame.time.Clock()
 
